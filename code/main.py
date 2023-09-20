@@ -1,6 +1,7 @@
 import pygame
 from colors import *
 import random
+import numpy as np
 
 class Panel:
    def __init__(self, x, y, panel_height, panel_width, border_width, border_color, row_width, row_color):
@@ -34,20 +35,33 @@ class Panel:
       return panel_rects, row_rects
    
    def change_rects(self, screen):
-      y = self.y + self.border_width + self.row_width
-      rectindex = 0
-      while y + self.border_width + self.row_width <= self.y + self.panel_height: 
-         if random.randint(0, 1) > 0.5: # checking if the row should be changed or not
+      for i in range(len(self.row_rects)):
+         if random.randint(0, 1) > 0.8:
+            new_x = min(max(self.x , np.random.normal(self.row_rects[i].x, 100)), self.x + self.panel_width - self.platform_width)
             x = random.randint(self.x, self.panel_width - self.platform_width + self.x)
-            rect = pygame.Rect(x, y, self.platform_width, self.border_width)
-            self.row_rects[rectindex] = rect
-         rectindex += 1
-         y += self.border_width + self.row_width
+            rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
+            self.row_rects[i] = rect
       self.draw_rects(screen)
 
    def move_row_rects(self, dy):
       for i in range(len(self.row_rects)):
          self.row_rects[i].y += dy
+   
+   def add_rects(self, net_dy):
+      if net_dy > self.border_width + self.row_width:
+         y = self.row_rects[0].y
+         while y - self.border_width - self.row_width >= self.y + self.border_width:
+            x = random.randint(self.x, self.panel_width - self.platform_width + self.x)
+            rect = pygame.Rect(x, y - self.border_width - self.row_width, self.platform_width, self.border_width)
+            self.row_rects.insert(0, rect)
+            y -= self.border_width + self.row_width
+      net_dy = 0.
+      
+   def remove_rects(self):
+      for rect in self.row_rects:
+         if rect.y < self.y or rect.y > self.y + self.panel_height:
+            self.row_rects.remove(rect)
+         
 
    def draw_panels(self, screen):
       pygame.draw.rect(screen, self.border_color, self.panel_rects[0])
@@ -122,13 +136,17 @@ class game:
 
          # net displacment in y direction
          net_dy += dy
+         self.panel.move_row_rects(dy)
+         self.panel.add_rects(net_dy)
+         self.panel.remove_rects()
 
-         if self.timer == self.fps * self.rectAlterDelay:
+
+         if self.timer > self.fps * self.rectAlterDelay and  direction[1] == 0:
+            # wait for 2 seconds and then change the rects
             self.timer = 0
             self.panel.change_rects(self.screen)
 
          # move row_rects
-         self.panel.move_row_rects(dy)
 
          # draw inside panel
          self.panel.draw_rects(self.screen)
