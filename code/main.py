@@ -45,6 +45,9 @@ class Panel:
          y += self.border_width + self.row_width
       self.draw_rects(screen)
 
+   def move_row_rects(self, dy):
+      for i in range(len(self.row_rects)):
+         self.row_rects[i].y += dy
 
    def draw_panels(self, screen):
       pygame.draw.rect(screen, self.border_color, self.panel_rects[0])
@@ -78,22 +81,54 @@ class game:
                          panel_width=panel_width, 
                          border_width=2, 
                          border_color=WHITE,
-                         row_width=50, row_color=WHITE)
+                         row_width=100, row_color=WHITE)
       
-
+      dy = 0.
+      net_dy = 0.
+      direction = [0, 0]
+      '''
+      Steps to be followed in a loop:
+      1. check for inputs
+      2. update entities w.r.t received inputs
+      3. draw entities
+      4. update screen
+      '''
       while True:
          self.clock.tick(self.fps)
          self.screen.fill(GRAY)
          self.timer += 1
-         if self.timer == self.fps * self.rectAlterDelay:
-            self.timer = 0
-            self.panel.change_rects(self.screen)
 
          # check and handle keyboard and mouse events
          for event in pygame.event.get():
             if event.type == pygame.QUIT:
                pygame.quit()
                exit()
+
+            if event.type == pygame.KEYDOWN:
+               if event.key == pygame.K_UP:
+                  direction[1] = 1
+   
+               if event.key == pygame.K_DOWN:
+                  direction[1] = -1
+            
+            if event.type == pygame.KEYUP:
+               direction[1] = 0
+                  
+         # checking y displacement
+         if direction[1] != 0:
+            dy = -5. if direction[1] == -1 else 5.
+         else:
+            dy = 0.
+
+         # net displacment in y direction
+         net_dy += dy
+
+         if self.timer == self.fps * self.rectAlterDelay:
+            self.timer = 0
+            self.panel.change_rects(self.screen)
+
+         # move row_rects
+         self.panel.move_row_rects(dy)
 
          # draw inside panel
          self.panel.draw_rects(self.screen)
