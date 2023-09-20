@@ -26,31 +26,60 @@ class Panel:
 
       y = self.y + self.border_width + self.row_width
       while y + self.border_width + self.row_width <= self.y + self.panel_height:
-         gap = random.randint(50, 100)
-         left_width = random.randint(0, self.panel_width - 2*self.border_width - gap)
-         right_width = self.panel_width - 2*self.border_width - left_width - gap
-         left_rect = None if left_width < 10 else pygame.Rect(self.x + self.border_width, y, left_width, self.border_width)
-         right_rect = None if right_width < 10 else pygame.Rect(self.x + self.border_width + left_width + gap, y, right_width, self.border_width)
-         row_rects.append([left_rect, right_rect])
+         # make a line of width 100 between 2 borders
+         gap = 100
+         x = random.randint(self.x, self.panel_width - gap + self.x)
+         rect = pygame.Rect(x, y, gap, self.border_width)
+         # gap = 100
+         # left_width = random.randint(0, self.panel_width - 2*self.border_width - gap)
+         # right_width = self.panel_width - 2*self.border_width - left_width - gap
+         # left_rect = None if left_width < 10 else pygame.Rect(self.x + self.border_width, y, left_width, self.border_width)
+         # right_rect = None if right_width < 10 else pygame.Rect(self.x + self.border_width + left_width + gap, y, right_width, self.border_width)
+         row_rects.append(rect)
          y += self.border_width + self.row_width
 
       return panel_rects, row_rects
+   
+   def change_rects(self, screen):
+      row_rects = []
+      y = self.y + self.border_width + self.row_width
+      while y + self.border_width + self.row_width <= self.y + self.panel_height:
+         gap = 100
+         x = random.randint(self.x, self.panel_width - gap + self.x)
+         rect = pygame.Rect(x, y, gap, self.border_width)
+         # gap = 100
+         # left_width = random.randint(0, self.panel_width - 2*self.border_width - gap)
+         # right_width = self.panel_width - 2*self.border_width - left_width - gap
+         # left_rect = None if left_width < 10 else pygame.Rect(self.x + self.border_width, y, left_width, self.border_width)
+         # right_rect = None if right_width < 10 else pygame.Rect(self.x + self.border_width + left_width + gap, y, right_width, self.border_width)
+         row_rects.append(rect)
+         y += self.border_width + self.row_width
+      self.row_rects = row_rects
+      self.draw_rects(screen)
 
-   def draw(self, screen):
-      # draw panel borders
-      # going clockwise
+
+   def draw_panels(self, screen):
       pygame.draw.rect(screen, self.border_color, self.panel_rects[0])
       pygame.draw.rect(screen, self.border_color, self.panel_rects[1])
       pygame.draw.rect(screen, self.border_color, self.panel_rects[2])
       pygame.draw.rect(screen, self.border_color, self.panel_rects[3])
 
+
+   def draw_rects(self, screen):
+      # draw panel borders
+      # going clockwise
+     
+
       # draw rows
-      for left, right in self.row_rects:
-         if left != None:
-            pygame.draw.rect(screen, self.row_color, left)
+      # for left, right in self.row_rects:
+      #    if left != None:
+      #       pygame.draw.rect(screen, self.row_color, left)
             
-         if right != None:
-            pygame.draw.rect(screen, self.row_color, right)
+      #    if right != None:
+      #       pygame.draw.rect(screen, self.row_color, right)
+
+      for rect in self.row_rects:
+         pygame.draw.rect(screen, self.row_color, rect)
 
 class game:
    def __init__(self) -> None:
@@ -61,6 +90,8 @@ class game:
       pygame.display.set_caption("Game")
       self.clock = pygame.time.Clock()
       self.fps = 30
+      self.timer = 0
+      self.rectAlterDelay = 2 # seconds 
 
    def run(self):
       panel_width = int(self.screen_width/2)
@@ -72,10 +103,17 @@ class game:
                          border_width=2, 
                          border_color=WHITE,
                          row_width=50, row_color=WHITE)
+      
 
       while True:
          self.clock.tick(self.fps)
+         print(self.timer)
          self.screen.fill(GRAY)
+         self.timer += 1
+         if self.timer == self.fps * self.rectAlterDelay:
+            self.timer = 0
+            self.panel.change_rects(self.screen)
+         
 
          # check and handle keyboard and mouse events
          for event in pygame.event.get():
@@ -84,7 +122,8 @@ class game:
                exit()
 
          # draw inside panel
-         self.panel.draw(self.screen)
+         self.panel.draw_rects(self.screen)
+         self.panel.draw_panels(self.screen)
 
          pygame.display.update()
 
