@@ -37,10 +37,18 @@ class Panel:
    def change_rects(self, screen):
       for i in range(len(self.row_rects)):
          if random.randint(0, 1) > 0.8:
-            new_x = min(max(self.x , np.random.normal(self.row_rects[i].x, 100)), self.x + self.panel_width - self.platform_width)
-            x = random.randint(self.x, self.panel_width - self.platform_width + self.x)
-            rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
-            self.row_rects[i] = rect
+            if self.row_rects[i].x < self.x + self.panel_width - self.platform_width:
+               new_x = min(max(self.x , abs(np.random.normal(self.x + (self.panel_width - self.platform_width)/2, 100))), self.x + self.panel_width - self.platform_width)
+               rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
+               self.row_rects[i] = rect
+            else:
+               new_x = min(max(self.x , abs(np.random.normal(self.x + (2*self.panel_width - self.platform_width)/2, 100))), self.x + self.panel_width - self.platform_width)
+               rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
+               self.row_rects[i] = rect
+            # new_x = min(max(self.x , np.random.normal(self.row_rects[i].x, 100)), self.x + self.panel_width - self.platform_width)
+            # x = random.randint(self.x, self.panel_width - self.platform_width + self.x)
+            # rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
+            # self.row_rects[i] = rect
       self.draw_rects(screen)
 
    def move_row_rects(self, dy):
@@ -137,6 +145,8 @@ class game:
          # net displacment in y direction
          net_dy += dy
          self.panel.move_row_rects(dy)
+
+         # add and remove rects
          self.panel.add_rects(net_dy)
          self.panel.remove_rects()
 
