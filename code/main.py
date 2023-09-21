@@ -20,7 +20,8 @@ class Panel:
 
    def move_guns(self,screen):
       for gun in self.guns:
-         new_y = random.randint(PANEL_START_Y, PANEL_END_Y-20)
+         # new_y = random.randint(PANEL_START_Y, PANEL_END_Y-20)
+         new_y = abs(np.random.normal(PANEL_START_Y-2* GUN_WIDTH +PANEL_HEIGHT/2, 100))
          gun.rect.y = new_y
          gun.draw(screen)
 
@@ -103,7 +104,7 @@ class Gun:
       for bullet in self.bullets:
          if(bullet.rect.colliderect(player.rect)):
             player.health -= 2
-            print(player.health)
+            print("Player health :",player.health)
             self.bullets.remove(bullet)
          bullet.dx = self.direction * 5
          bullet.move()
