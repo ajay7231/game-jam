@@ -34,22 +34,22 @@ class Panel:
 
       return panel_rects, row_rects
    
-   def change_rects(self, screen):
-      for i in range(len(self.row_rects)):
-         if random.randint(0, 1) > 0.8:
-            if self.row_rects[i].x < self.x + self.panel_width - self.platform_width:
-               new_x = min(max(self.x , abs(np.random.normal(self.x + (self.panel_width - self.platform_width)/2, 100))), self.x + self.panel_width - self.platform_width)
-               rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
-               self.row_rects[i] = rect
-            else:
-               new_x = min(max(self.x , abs(np.random.normal(self.x + (2*self.panel_width - self.platform_width)/2, 100))), self.x + self.panel_width - self.platform_width)
-               rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
-               self.row_rects[i] = rect
-            # new_x = min(max(self.x , np.random.normal(self.row_rects[i].x, 100)), self.x + self.panel_width - self.platform_width)
-            # x = random.randint(self.x, self.panel_width - self.platform_width + self.x)
-            # rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
-            # self.row_rects[i] = rect
-      self.draw_rects(screen)
+   # def change_rects(self, screen):
+   #    for i in range(len(self.row_rects)):
+   #       if random.randint(0, 1) > 0.8:
+   #          if self.row_rects[i].x < self.x + self.panel_width - self.platform_width:
+   #             new_x = min(max(self.x , abs(np.random.normal(self.x + (self.panel_width - self.platform_width)/2, 100))), self.x + self.panel_width - self.platform_width)
+   #             rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
+   #             self.row_rects[i] = rect
+   #          else:
+   #             new_x = min(max(self.x , abs(np.random.normal(self.x + (2*self.panel_width - self.platform_width)/2, 100))), self.x + self.panel_width - self.platform_width)
+   #             rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
+   #             self.row_rects[i] = rect
+   #          # new_x = min(max(self.x , np.random.normal(self.row_rects[i].x, 100)), self.x + self.panel_width - self.platform_width)
+   #          # x = random.randint(self.x, self.panel_width - self.platform_width + self.x)
+   #          # rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
+   #          # self.row_rects[i] = rect
+   #    self.draw_rects(screen)
 
    def move_row_rects(self, dy):
       for i in range(len(self.row_rects)):
@@ -91,7 +91,7 @@ class game:
       pygame.display.set_caption("Game")
       self.clock = pygame.time.Clock()
       self.fps = 30
-      self.timer = 0
+      # self.timer = 0
       self.rectAlterDelay = 2 # seconds 
 
    def run(self):
@@ -118,7 +118,7 @@ class game:
       while True:
          self.clock.tick(self.fps)
          self.screen.fill(GRAY)
-         self.timer += 1
+         # self.timer += 1
 
          # check and handle keyboard and mouse events
          for event in pygame.event.get():
@@ -151,10 +151,10 @@ class game:
          self.panel.remove_rects()
 
 
-         if self.timer > self.fps * self.rectAlterDelay and  direction[1] == 0:
-            # wait for 2 seconds and then change the rects
-            self.timer = 0
-            self.panel.change_rects(self.screen)
+         # if self.timer > self.fps * self.rectAlterDelay and  direction[1] == 0:
+         #    # wait for 2 seconds and then change the rects
+         #    self.timer = 0
+         #    self.panel.change_rects(self.screen)
 
          # move row_rects
 
