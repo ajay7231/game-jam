@@ -9,6 +9,8 @@ class Player:
         self.dx = 0.
         self.net_dy = 0.
         self.jump_power = 0
+        self.boost_power = 1
+        self.boost = -16.
 
     def move_x(self):
         self.rect.x += self.dx

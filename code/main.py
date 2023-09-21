@@ -138,8 +138,12 @@ class game:
 
             if event.type == pygame.KEYDOWN:
                if event.key == pygame.K_UP and self.player.jump_power:
-                  self.player.dy = -22.
-   
+                  self.player.dy = -18.
+
+               if event.key == pygame.K_SPACE and self.player.boost_power:
+                  self.player.dy += self.player.boost
+                  self.player.boost_power = 0
+      
                # if event.key == pygame.K_DOWN:
                #    direction[1] = -1
                
