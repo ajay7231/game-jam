@@ -2,18 +2,20 @@ import pygame
 from colors import *
 import random
 import numpy as np
+from player import Player
 
 class Panel:
    def __init__(self, x, y, panel_height, panel_width, border_width, border_color, row_width, row_color):
       self.x = x # top left
       self.y = y # top left
+      self.dy = 0.
       self.panel_height = panel_height
       self.panel_width = panel_width
       self.border_width = border_width
       self.border_color = border_color
       self.row_width = row_width
       self.row_color = row_color
-      self.platform_width = 100
+      self.platform_width = 80
       self.panel_rects, self.row_rects = self.get_rects()
       
    def get_rects(self):
@@ -38,11 +40,11 @@ class Panel:
       for i in range(len(self.row_rects)):
          if random.randint(0, 1) > 0.8:
             if self.row_rects[i].x < self.x + self.panel_width - self.platform_width:
-               new_x = min(max(self.x , abs(np.random.normal(self.x + (self.panel_width - self.platform_width)/2, 100))), self.x + self.panel_width - self.platform_width)
+               new_x = min(max(self.x , abs(np.random.normal(self.x + (self.panel_width - self.platform_width)/2, 20))), self.x + self.panel_width - self.platform_width)
                rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
                self.row_rects[i] = rect
             else:
-               new_x = min(max(self.x , abs(np.random.normal(self.x + (2*self.panel_width - self.platform_width)/2, 100))), self.x + self.panel_width - self.platform_width)
+               new_x = min(max(self.x , abs(np.random.normal(self.x + (2*self.panel_width - self.platform_width)/2, 20))), self.x + self.panel_width - self.platform_width)
                rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
                self.row_rects[i] = rect
             # new_x = min(max(self.x , np.random.normal(self.row_rects[i].x, 100)), self.x + self.panel_width - self.platform_width)
@@ -90,7 +92,7 @@ class game:
       self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
       pygame.display.set_caption("Game")
       self.clock = pygame.time.Clock()
-      self.fps = 30
+      self.fps = 40
       self.timer = 0
       self.rectAlterDelay = 2 # seconds 
 
@@ -105,9 +107,17 @@ class game:
                          border_color=WHITE,
                          row_width=100, row_color=WHITE)
       
-      dy = 0.
-      net_dy = 0.
-      direction = [0, 0]
+      self.player = Player(
+         x=0.,
+         y=0.,
+         h=24,
+         w=24,
+         color=CYAN
+      )
+
+      self.player.rect.center = self.panel.row_rects[int(len(self.panel.row_rects)/2)].center
+      self.player.rect.bottom = self.panel.row_rects[int(len(self.panel.row_rects)/2)].top
+      
       '''
       Steps to be followed in a loop:
       1. check for inputs
@@ -127,40 +137,68 @@ class game:
                exit()
 
             if event.type == pygame.KEYDOWN:
-               if event.key == pygame.K_UP:
-                  direction[1] = 1
+               if event.key == pygame.K_UP and self.player.jump_power:
+                  self.player.dy = -50.
    
-               if event.key == pygame.K_DOWN:
-                  direction[1] = -1
+               # if event.key == pygame.K_DOWN:
+               #    direction[1] = -1
+               
+               if event.key == pygame.K_RIGHT:
+                  self.player.dx = 6.
+
+               if event.key == pygame.K_LEFT:
+                  self.player.dx = -6.
             
             if event.type == pygame.KEYUP:
-               direction[1] = 0
-                  
-         # checking y displacement
-         if direction[1] != 0:
-            dy = -5. if direction[1] == -1 else 5.
-         else:
-            dy = 0.
+               if event.key in (pygame.K_RIGHT, pygame.K_LEFT):
+                  self.player.dx = 0.
 
-         # net displacment in y direction
-         net_dy += dy
-         self.panel.move_row_rects(dy)
+         # player movements
+         # apply gravity on player
+         self.player.dy = min(self.player.dy + 1.4, 14.)
+         # check collision 
+         # first move horizontally
+         self.player.move_x()
+         for rect in self.panel.row_rects:
+            if self.player.rect.colliderect(rect):
+               if self.player.dx < 0.:
+                  self.player.rect.left = rect.right
+               else:
+                  self.player.rect.right = rect.left
+               self.player.dx = 0.
+
+         # now move vertically
+         self.player.move_y()
+         # move row_rects
+         if self.player.dy < 0.:
+            self.panel.move_row_rects(abs(self.player.dy))
+         self.player.jump_power = 0
+         for rect in self.panel.row_rects:
+            if self.player.rect.colliderect(rect):
+               if self.player.dy < 0.:
+                  self.player.rect.top = rect.bottom
+               else:
+                  self.player.jump_power = 1
+                  self.player.rect.bottom = rect.top
+               self.player.dy = 0.
+
 
          # add and remove rects
-         self.panel.add_rects(net_dy)
+         self.panel.add_rects(self.player.net_dy)
          self.panel.remove_rects()
 
-
-         if self.timer > self.fps * self.rectAlterDelay and  direction[1] == 0:
+         if self.timer > self.fps * self.rectAlterDelay:
             # wait for 2 seconds and then change the rects
             self.timer = 0
-            self.panel.change_rects(self.screen)
+            # self.panel.change_rects(self.screen)
 
-         # move row_rects
 
          # draw inside panel
          self.panel.draw_rects(self.screen)
          self.panel.draw_panels(self.screen)
+
+         # draw player
+         self.player.draw(self.screen)
 
          pygame.display.update()
 
