@@ -1,4 +1,5 @@
 import pygame
+from settings import *
 
 class Player:
     def __init__(self, x, y, h, w, color) -> None:
@@ -11,6 +12,7 @@ class Player:
         self.jump_power = 0
         self.boost_power = 1
         self.boost = -16.
+        self.health = PLAYER_MAX_HEALTH
 
     def move_x(self):
         self.rect.x += self.dx
