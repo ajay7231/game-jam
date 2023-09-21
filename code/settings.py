@@ -1,0 +1,52 @@
+import pygame
+pygame.init()
+
+
+
+# colors
+
+YELLOW = '#f1e60d'
+RED = '#e51b20'
+BLUE = '#204b9b'
+GREEN = '#65b32e'
+PURPLE = '#7b217f'
+CYAN = '#6cc6d9'
+ORANGE = '#f07e13'
+GRAY = '#1C1C1C'
+WHITE = '#FFFFFF'
+BORDER_COLOR = WHITE
+ROW_COLOR = WHITE
+
+#dimensions
+
+SCREEN_WIDTH =  int(pygame.display.Info().current_w/1.4)
+SCREEN_HEIGHT = int(pygame.display.Info().current_h)
+
+PANEL_WIDTH = int(SCREEN_WIDTH/2)
+PANEL_HEIGHT = int(SCREEN_HEIGHT/1.2)
+BORDER_WIDTH = 2
+ROW_WIDTH = 100
+PLATFORM_WIDTH = 80
+GUN_WIDTH = 20
+GUN_HEIGHT = 20
+
+# coordinates
+
+PANEL_START_X = int((SCREEN_WIDTH - PANEL_WIDTH)/2)
+PANEL_START_Y = int((SCREEN_HEIGHT - PANEL_HEIGHT)/2)
+PANEL_END_X = PANEL_START_X + PANEL_WIDTH
+PANEL_END_Y = PANEL_START_Y + PANEL_HEIGHT
+
+# player
+
+PLAYER_MAX_HEALTH = 100
+
+# gun
+
+BULLET_DAMAGE = 2
+GUN_COLOR = RED
+BULLET_COLOR = WHITE
+
+# COLORS
+
+

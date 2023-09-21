@@ -1,111 +1,139 @@
 import pygame
-from colors import *
 import random
 import numpy as np
 from player import Player
+from settings import *
 
 class Panel:
-   def __init__(self, x, y, panel_height, panel_width, border_width, border_color, row_width, row_color):
-      self.x = x # top left
-      self.y = y # top left
+   def __init__(self):
       self.dy = 0.
-      self.panel_height = panel_height
-      self.panel_width = panel_width
-      self.border_width = border_width
-      self.border_color = border_color
-      self.row_width = row_width
-      self.row_color = row_color
-      self.platform_width = 80
       self.panel_rects, self.row_rects = self.get_rects()
-      
+      self.bullets = []
+      self.guns = [
+         Gun(x=PANEL_START_X, y =(PANEL_END_Y)//2 , direction=1),
+         Gun(x=PANEL_END_X-GUN_WIDTH , y =PANEL_END_Y//2 , direction=-1)
+      ]
+
+   def draw_guns(self, screen):
+      for gun in self.guns:
+         gun.draw(screen)
+
+   def move_guns(self,screen):
+      for gun in self.guns:
+         new_y = random.randint(PANEL_START_Y, PANEL_END_Y-20)
+         gun.rect.y = new_y
+         gun.draw(screen)
+
+
    def get_rects(self):
       panel_rects = []
       row_rects = []
 
-      panel_rects.append(pygame.Rect(self.x, self.y, self.panel_width, self.border_width))
-      panel_rects.append(pygame.Rect(self.x + self.panel_width - self.border_width, self.y, self.border_width, self.panel_height))
-      panel_rects.append(pygame.Rect(self.x, self.y + self.panel_height - self.border_width, self.panel_width, self.border_width))
-      panel_rects.append(pygame.Rect(self.x, self.y, self.border_width, self.panel_height))
+      panel_rects.append(pygame.Rect(PANEL_START_X, PANEL_START_Y, PANEL_WIDTH, BORDER_WIDTH))
+      panel_rects.append(pygame.Rect(PANEL_END_X - BORDER_WIDTH, PANEL_START_Y, BORDER_WIDTH, PANEL_HEIGHT))
+      panel_rects.append(pygame.Rect(PANEL_START_X, PANEL_END_Y - BORDER_WIDTH, PANEL_WIDTH, BORDER_WIDTH))
+      panel_rects.append(pygame.Rect(PANEL_START_X, PANEL_START_Y, BORDER_WIDTH, PANEL_HEIGHT))
 
-      y = self.y + self.border_width + self.row_width
-      while y + self.border_width + self.row_width <= self.y + self.panel_height:
-         x = random.randint(self.x, self.panel_width - self.platform_width + self.x)
-         rect = pygame.Rect(x, y, self.platform_width, self.border_width)
+      y = PANEL_START_Y + BORDER_WIDTH + ROW_WIDTH
+      while y + BORDER_WIDTH + ROW_WIDTH <= PANEL_END_Y:
+         x = random.randint(PANEL_START_X, PANEL_END_X - PLATFORM_WIDTH)
+         rect = pygame.Rect(x, y, PLATFORM_WIDTH, BORDER_WIDTH)
          row_rects.append(rect)
-         y += self.border_width + self.row_width
+         y += BORDER_WIDTH + ROW_WIDTH
 
       return panel_rects, row_rects
-   
-   # def change_rects(self, screen):
-   #    for i in range(len(self.row_rects)):
-   #       if random.randint(0, 1) > 0.8:
-   #          if self.row_rects[i].x < self.x + self.panel_width - self.platform_width:
-   #             new_x = min(max(self.x , abs(np.random.normal(self.x + (self.panel_width - self.platform_width)/2, 100))), self.x + self.panel_width - self.platform_width)
-   #             rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
-   #             self.row_rects[i] = rect
-   #          else:
-   #             new_x = min(max(self.x , abs(np.random.normal(self.x + (2*self.panel_width - self.platform_width)/2, 100))), self.x + self.panel_width - self.platform_width)
-   #             rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
-   #             self.row_rects[i] = rect
-   #          # new_x = min(max(self.x , np.random.normal(self.row_rects[i].x, 100)), self.x + self.panel_width - self.platform_width)
-   #          # x = random.randint(self.x, self.panel_width - self.platform_width + self.x)
-   #          # rect = pygame.Rect(new_x, self.row_rects[i].y, self.platform_width, self.border_width)
-   #          # self.row_rects[i] = rect
-   #    self.draw_rects(screen)
 
    def move_row_rects(self, dy):
       for i in range(len(self.row_rects)):
          self.row_rects[i].y += dy
    
    def add_rects(self, net_dy):
-      if net_dy > self.border_width + self.row_width:
+      if net_dy > BORDER_WIDTH + ROW_WIDTH:
          y = self.row_rects[0].y
-         while y - self.border_width - self.row_width >= self.y + self.border_width:
-            x = random.randint(self.x, self.panel_width - self.platform_width + self.x)
-            rect = pygame.Rect(x, y - self.border_width - self.row_width, self.platform_width, self.border_width)
+         while y - BORDER_WIDTH - ROW_WIDTH >= PANEL_START_Y + BORDER_WIDTH:
+            x = random.randint(PANEL_START_X, PANEL_END_X - PLATFORM_WIDTH)
+            rect = pygame.Rect(x, y - BORDER_WIDTH - ROW_WIDTH, PLATFORM_WIDTH, BORDER_WIDTH)
             self.row_rects.insert(0, rect)
-            y -= self.border_width + self.row_width
+            y -= BORDER_WIDTH + ROW_WIDTH
       net_dy = 0.
       
    def remove_rects(self):
       for rect in self.row_rects:
-         if rect.y < self.y or rect.y > self.y + self.panel_height:
+         if rect.y < PANEL_START_Y or rect.y > PANEL_END_Y:
             self.row_rects.remove(rect)
          
 
    def draw_panels(self, screen):
-      pygame.draw.rect(screen, self.border_color, self.panel_rects[0])
-      pygame.draw.rect(screen, self.border_color, self.panel_rects[1])
-      pygame.draw.rect(screen, self.border_color, self.panel_rects[2])
-      pygame.draw.rect(screen, self.border_color, self.panel_rects[3])
+      for rect in self.panel_rects:
+         pygame.draw.rect(screen, BORDER_COLOR, rect)
 
 
    def draw_rects(self, screen):
       for rect in self.row_rects:
-         pygame.draw.rect(screen, self.row_color, rect)
+         pygame.draw.rect(screen, ROW_COLOR, rect)
+
+
+class Bullet:
+   def __init__(self, x, y):
+      self.rect = pygame.Rect(x, y, 5, 5)
+      self.color = BULLET_COLOR
+      self.dx = 0
+
+   def draw(self, screen):
+      pygame.draw.rect(screen, self.color, self.rect)
+
+   def move(self):
+      self.rect.x += self.dx
+   
+
+class Gun:
+   def __init__(self, x, y,direction):
+      self.rect = pygame.Rect(x, y, GUN_WIDTH, GUN_HEIGHT)
+      self.color = GUN_COLOR
+      self.bullets = []
+      self.direction = direction
+
+   def draw(self, screen):
+      pygame.draw.rect(screen, self.color, self.rect)
+
+   def shoot(self):
+      self.bullets.append(Bullet(x=self.rect.x, y=self.rect.y))
+      
+   def animate(self,screen,player):
+      for bullet in self.bullets:
+         if(bullet.rect.colliderect(player.rect)):
+            player.health -= 2
+            print(player.health)
+            self.bullets.remove(bullet)
+         bullet.dx = self.direction * 5
+         bullet.move()
+         bullet.draw(screen)
+         if bullet.rect.x < PANEL_START_X or bullet.rect.x > PANEL_END_X:
+            self.bullets.remove(bullet)
+      
+
+
+      
+
+      
 
 class game:
    def __init__(self) -> None:
-      pygame.init()
       displayInfo = pygame.display.Info()
       self.screen_height, self.screen_width = [int(displayInfo.current_h), int(displayInfo.current_w/1.4)]
       self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
       pygame.display.set_caption("Game")
       self.clock = pygame.time.Clock()
       self.fps = 40
-      self.timer = 0
-      self.rectAlterDelay = 2 # seconds 
+      self.bullet_timer = 0
+      self.gun_timer = 0
+      self.shoot_delay = 1 # seconds
+      self.gun_movement_delay = 3
+      self.panel = Panel()
+       # seconds 
+      
 
    def run(self):
-      panel_width = int(self.screen_width/2)
-      panel_height = int(self.screen_height/1.2)
-      self.panel = Panel(x=(self.screen_width - panel_width) / 2., 
-                         y=(self.screen_height - panel_height) / 2., 
-                         panel_height=panel_height, 
-                         panel_width=panel_width, 
-                         border_width=2, 
-                         border_color=WHITE,
-                         row_width=100, row_color=WHITE)
       
       self.player = Player(
          x=0.,
@@ -118,17 +146,11 @@ class game:
       self.player.rect.center = self.panel.row_rects[int(len(self.panel.row_rects)/2)].center
       self.player.rect.bottom = self.panel.row_rects[int(len(self.panel.row_rects)/2)].top
       
-      '''
-      Steps to be followed in a loop:
-      1. check for inputs
-      2. update entities w.r.t received inputs
-      3. draw entities
-      4. update screen
-      '''
       while True:
          self.clock.tick(self.fps)
          self.screen.fill(GRAY)
-         # self.timer += 1
+         self.bullet_timer += 1
+         self.gun_timer += 1
 
          # check and handle keyboard and mouse events
          for event in pygame.event.get():
@@ -142,7 +164,7 @@ class game:
 
                if event.key == pygame.K_SPACE and self.player.boost_power:
                   self.player.dy += self.player.boost
-                  self.player.boost_power = 0
+                  # self.player.boost_power = 0
       
                # if event.key == pygame.K_DOWN:
                #    direction[1] = -1
@@ -186,21 +208,32 @@ class game:
                   self.player.rect.bottom = rect.top
                self.player.dy = 0.
 
-
          # add and remove rects
+         
+
+         
          self.panel.add_rects(self.player.net_dy)
          self.panel.remove_rects()
 
 
-         # if self.timer > self.fps * self.rectAlterDelay and  direction[1] == 0:
-         #    # wait for 2 seconds and then change the rects
-         #    self.timer = 0
-         #    self.panel.change_rects(self.screen)
+         if self.bullet_timer > self.fps * self.shoot_delay:
+            # wait for 2 seconds and then change the rects
+            self.bullet_timer = 0
+            for gun in self.panel.guns:
+               gun.shoot()
+               # self.panel.move_guns(self.screen)
+         if self.gun_timer > self.fps * self.gun_movement_delay:
+            self.gun_timer = 0
+            self.panel.move_guns(self.screen)
+         
+         for gun in self.panel.guns:
+            gun.animate(self.screen, self.player)
 
 
          # draw inside panel
          self.panel.draw_rects(self.screen)
          self.panel.draw_panels(self.screen)
+         self.panel.draw_guns(self.screen)
 
          # draw player
          self.player.draw(self.screen)
