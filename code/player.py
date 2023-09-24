@@ -10,7 +10,7 @@ class Player:
         self.dx = 0.
         self.net_dy = 0.
         self.jump_power = 0
-        self.boost_power = 1
+        self.boost_power = 0
         self.boost = -16.
         self.health = PLAYER_MAX_HEALTH
 
@@ -18,7 +18,7 @@ class Player:
         self.rect.x += self.dx
 
     def move_y(self):
-        self.rect.y += self.dy
+        # self.rect.y += self.dy
         self.net_dy += abs(self.dy) if self.dy < 0. else 0.
 
     def draw(self, screen):

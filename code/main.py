@@ -104,18 +104,13 @@ class Gun:
       for bullet in self.bullets:
          if(bullet.rect.colliderect(player.rect)):
             player.health -= 2
-            print("Player health :",player.health)
+            # print("Player health :",player.health)
             self.bullets.remove(bullet)
          bullet.dx = self.direction * 5
          bullet.move()
          bullet.draw(screen)
          if bullet.rect.x < PANEL_START_X or bullet.rect.x > PANEL_END_X:
             self.bullets.remove(bullet)
-      
-
-
-      
-
       
 
 class game:
@@ -162,10 +157,11 @@ class game:
             if event.type == pygame.KEYDOWN:
                if event.key == pygame.K_UP and self.player.jump_power:
                   self.player.dy = -18.
+                  self.player.boost_power = 1
 
                if event.key == pygame.K_SPACE and self.player.boost_power:
-                  self.player.dy += self.player.boost
-                  # self.player.boost_power = 0
+                  self.player.dy = self.player.boost
+                  self.player.boost_power = 0
       
                # if event.key == pygame.K_DOWN:
                #    direction[1] = -1
@@ -182,7 +178,9 @@ class game:
 
          # player movements
          # apply gravity on player
+         # if self.player.free_fall:
          self.player.dy = min(self.player.dy + 1.4, 14.)
+      
          # check collision 
          # first move horizontally
          self.player.move_x()
@@ -195,24 +193,35 @@ class game:
                self.player.dx = 0.
 
          # now move vertically
+         for rect in self.panel.row_rects:
+            rect.y -= self.player.dy
          self.player.move_y()
          # move row_rects
          if self.player.dy < 0.:
             self.panel.move_row_rects(abs(self.player.dy))
          self.player.jump_power = 0
+         change = 0.
          for rect in self.panel.row_rects:
-            if self.player.rect.colliderect(rect):
+            if rect.colliderect(self.player.rect):
                if self.player.dy < 0.:
-                  self.player.rect.top = rect.bottom
+                  # self.player.rect.top = rect.bottom
+                  change = -1.*(rect.y + rect.height - self.player.rect.y)
                else:
                   self.player.jump_power = 1
-                  self.player.rect.bottom = rect.top
+                  self.player.boost_power = 0
+                  self.player.free_fall = 0
+                  # self.player.rect.bottom = rect.top
+                  change = (self.player.rect.y + self.player.rect.height) - rect.y
                self.player.dy = 0.
+               break
+
+         for rect in self.panel.row_rects:
+            rect.y += change
 
          # add and remove rects
          
 
-         
+         # print(self.player.net_dy)
          self.panel.add_rects(self.player.net_dy)
          self.panel.remove_rects()
 
